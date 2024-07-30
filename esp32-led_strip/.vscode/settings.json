@@ -12,6 +12,11 @@
         "board/esp32-wrover.cfg"
     ],
     "idf.port": "/dev/ttyACM0",
-    "idf.pythonBinPath": "$HOME/.espressif/python_env/idf4.4_py3.10_env/bin/python",
-    "idf.toolsPath": "$HOME/.espressif"
+    "idf.pythonBinPath": "$HOME/.espressif/python_env/idf5.4_py3.10_env/bin/python",
+    "idf.toolsPath": "$HOME/.espressif",
+    "files.associations": {
+        "sdkconfig.h": "c",
+        "*.tcc": "c",
+        "format": "c"
+    }
 }
