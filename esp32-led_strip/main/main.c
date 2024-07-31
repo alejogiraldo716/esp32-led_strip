@@ -14,7 +14,21 @@
 #include "esp_system.h"
 #include <driver/gpio.h>
 #include "esp_log.h"
+#include "driver/ledc.h"
+#include "esp_err.h"
 
+#define LEDC_TIMER                   LEDC_TIMER_0
+#define LEDC_MODE                    LEDC_HIGH_SPEED_MODE
+#define LEDC_OUTPUT_IO               (32) // The GPIO pin that is used for the LED
+#define LEDC_CHANNEL                 LEDC_CHANNEL_0
+#define LEDC_DUTY_RES                LEDC_TIMER_13_BIT // 13 bits for duty resolution
+#define LEDC_FREQUENCY               (1) // 5 kHz for LEDC PWM frequency
+
+
+
+#define LEDC_MAX_DUTY              (8192) // Maximum duty cycle value (100%)
+#define LEDC_PWM_PERCENTAGE        75 // 50% duty cycle
+#define LEDC_PWM_DUTY              ((LEDC_MAX_DUTY * LEDC_PWM_PERCENTAGE) / 100) // 50% duty cycle
 
 #define BLINK_GPIO 2
 #define CONFIG_BLINK_PERIOD 1000
@@ -22,6 +36,35 @@
 
 static const char *TAG = "example";
 static uint8_t s_led_state = 0;
+
+
+
+void led_pwm_init(void){
+        ledc_timer_config_t ledc_timer = {
+        .duty_resolution = LEDC_DUTY_RES, // pwm duty resolution 13 bits
+        .freq_hz = LEDC_FREQUENCY,        // Frequency of PWM signal 5 kHz
+        .speed_mode = LEDC_MODE,          // High speed mode 
+        .timer_num = LEDC_TIMER,          // Timer index 
+        .clk_cfg = LEDC_AUTO_CLK          // Auto select the source clock
+    };
+    ledc_timer_config(&ledc_timer);
+
+
+    // Configure the PWM channel
+    ledc_channel_config_t ledc_channel = {
+        .channel    = LEDC_CHANNEL,
+        .duty       = 0,                  // Initial duty cycle 0 %
+        .gpio_num   = LEDC_OUTPUT_IO,
+        .speed_mode = LEDC_MODE,
+        .hpoint     = 0,
+        .timer_sel  = LEDC_TIMER
+    };
+    ledc_channel_config(&ledc_channel);
+
+    // Set the duty cycle
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, LEDC_PWM_DUTY);
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL);
+}
 
 
 static void configure_led(void)
@@ -69,6 +112,7 @@ void device_info_print(void){
 void app_main(void)
 {
     configure_led();
+    led_pwm_init();
     printf("This is an example!\n");
     device_info_print();
 

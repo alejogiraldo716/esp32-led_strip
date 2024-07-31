@@ -52,6 +52,6 @@ Thumbs.db
 build/
 
 # Visual Studio Code files
-# .vscode/*
+.vscode/*
 *.old
 *.code-workspace

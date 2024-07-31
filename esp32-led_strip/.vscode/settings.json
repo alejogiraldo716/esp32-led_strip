@@ -17,6 +17,9 @@
     "files.associations": {
         "sdkconfig.h": "c",
         "*.tcc": "c",
-        "format": "c"
+        "format": "c",
+        "mcpwm.h": "c",
+        "mcpwm_periph.h": "c",
+        "mcpwm_prelude.h": "c"
     }
 }
