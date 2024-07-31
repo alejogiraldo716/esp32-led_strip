@@ -17,6 +17,8 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 
+#include "led_strip.h"
+
 #define LEDC_TIMER                   LEDC_TIMER_0
 #define LEDC_MODE                    LEDC_HIGH_SPEED_MODE
 #define LEDC_OUTPUT_IO               (32) // The GPIO pin that is used for the LED
@@ -31,12 +33,38 @@
 #define LEDC_PWM_DUTY              ((LEDC_MAX_DUTY * LEDC_PWM_PERCENTAGE) / 100) // 50% duty cycle
 
 #define BLINK_GPIO 2
-#define CONFIG_BLINK_PERIOD 1000
+#define CONFIG_BLINK_PERIOD         1000
+
+
+#define RMT_TX_GPIO                 18 // Must be less than GPIO_NUM_33
+#define STRIP_LED_NUMBER            24
+#define STRIP_LED_LEN               STRIP_LED_NUMBER
+#define RMT_TX_CHANNEL              RMT_CHANNEL_0
 
 
 static const char *TAG = "example";
 static uint8_t s_led_state = 0;
 
+
+
+void led_strip_struct_init(struct led_strip_t *led_strip) {
+
+    if (led_strip == NULL) {
+        ESP_LOGE(TAG, "led_strip is NULL");
+        return;
+    }
+
+    led_strip->rmt_channel        = RMT_CHANNEL_0;
+    led_strip->gpio               = RMT_TX_GPIO;
+    led_strip->rgb_led_type       = RGB_LED_TYPE_WS2812;
+    led_strip->led_strip_length   = STRIP_LED_LEN;
+    led_strip->access_semaphore   = xSemaphoreCreateBinary();
+
+    led_strip->led_strip_buf_1 = malloc(sizeof(struct led_color_t) * led_strip->led_strip_length);
+    led_strip->led_strip_buf_2 = malloc(sizeof(struct led_color_t) * led_strip->led_strip_length);
+    
+    led_strip_init(led_strip);
+}
 
 
 void led_pwm_init(void){
@@ -115,6 +143,33 @@ void app_main(void)
     led_pwm_init();
     printf("This is an example!\n");
     device_info_print();
+
+    struct led_strip_t led_strip;
+    led_strip_struct_init(&led_strip);
+    led_strip_clear(&led_strip);
+    led_strip_show(&led_strip);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+    struct led_color_t color = {0, 255, 0};
+    led_strip_set_pixel_color(&led_strip, 0, &color);
+    led_strip_show(&led_strip);
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    color.red = 255;
+    color.green = 255;
+    color.blue = 0;
+
+    led_strip_set_pixel_color(&led_strip, 1, &color);
+    led_strip_show(&led_strip);
+    
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    color.red = 255;
+    color.green = 255;
+    color.blue = 255;
+    led_strip_set_pixel_color(&led_strip, 2, &color);
+    led_strip_show(&led_strip);
 
     while (1)
     {
