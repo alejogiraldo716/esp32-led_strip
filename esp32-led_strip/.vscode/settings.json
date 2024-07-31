@@ -25,6 +25,8 @@
         "led_strip.h": "c",
         "freertos.h": "c",
         "gpio.h": "c",
-        "rmt_types_legacy.h": "c"
+        "rmt_types_legacy.h": "c",
+        "task.h": "c",
+        "string.h": "c"
     }
 }
